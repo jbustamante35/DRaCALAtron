@@ -22,7 +22,7 @@ ADD MORE TO SUMMARY
 - ql2psl
 - saveSpots
 - changeRadii (.m and .fig)
-
+ 
 
 ## NOTES ON IMAGE TYPES (IMPORTANT!)
 Sample images are stored as Quantum Level (QL) pixel scaling data, which is a log-transformed, non-linear pixel scaling method performed by standard phosphoimager instruments. The function ql2psl() [in ql2psl.m] performs a log-to-linear transformation on each pixel of an 8-bit or 16-bit grayscale 2D image to convert it to a Photo Stimulated Luminescence (PSL) value. The PSL value is the true measure of fluorescence from the radio-labelled ligand.
