@@ -11,7 +11,7 @@ ADD MORE TO SUMMARY
 - Try to avoid breaking things
 - Publish! 
 
-# Main Functions
+## Main Functions
 - QuantDRaCALA (.m and .fig)
 - spotAnalyzer 
 - getSpotData
