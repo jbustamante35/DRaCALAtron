@@ -8,11 +8,12 @@ Screenshots of the GUI windows and sample images are shown below.
 ## BASIC WORKFLOW
 - Installation and Set-up
     Download all files and folders from this GitHub page and place into desired directory. Then either: 
+    
         1) Set Path to this directory
-            -- Execute program by typing "QuantDRaCALA" in the console
+            Execute program by typing "QuantDRaCALA" in the console
             
         2) Use Matlab's Package App tool to package the program as an executable Matlab app  
-            -- Start the program by clicking on the QuantDRaCALA app icon
+            Start the program by clicking on the QuantDRaCALA app icon
 
 - Pre-processing and Loading Images
     Read "Notes on Image Types" section below before using this program. 
