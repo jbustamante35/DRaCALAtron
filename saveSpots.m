@@ -1,4 +1,4 @@
-function saveSpots(mySpots, filename)
+function saveSpots(mySpots, myProps, filename)
 % Activated when "Save Data" button is pressed. User is prompted to choose
 % a filename for the exported .mat and .xls files to be saved in the
 % desired directory. 
@@ -14,6 +14,20 @@ function saveSpots(mySpots, filename)
 %   - outputSpots: exportable dataset array of converted saveSpots named as
 %   filename
 
+
+% save(filename, 'mySpots', 'myProps'); % Saves data as .mat file
+
 mySpots_dataset = struct2dataset(mySpots(:));
-save(filename, 'mySpots'); % Saves data as .mat file
-export(mySpots_dataset, 'XLSfile', filename); % Saves data as .xls file
+
+if ispc == 1
+    export(mySpots_dataset, 'XLSfile', filename); % Saves data as .xls file    
+    save(filename, 'mySpots');
+    save(filename, 'myProps', '-append');
+elseif isunix == 1
+    filename = char(filename);
+    save(filename, 'mySpots');
+    save(filename, 'myProps', '-append');
+    export(mySpots_dataset, 'File', sprintf('%s.txt', filename));
+else
+    export(mySpots_dataset, 'File', filename);
+end

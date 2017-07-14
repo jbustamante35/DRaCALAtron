@@ -1,4 +1,4 @@
-function [spotData, spotProps] = spotAnalyzer(im_psl, im_raw, innerRadius, outerRadius, switchMode)
+function [spotData, spotProps] = spotAnalyzer(im_psl, innerRadius, outerRadius, switchMode)
 % function [spotData, spotProps] = spotAnalyzer(varargin)
 %
 % spotAnalyzer: Function to analyze DraCALA spot assays.
@@ -61,7 +61,7 @@ switch switchMode
            
         % Re-index spot index reflect grid coordinates
         spotProps_unsorted = regionprops(im_bounds_refine, im_psl, 'all');
-        spotProps_unsorted = maskOnCircles(im_psl, spotProps_unsorted, innerRadius, outerRadius);
+        spotProps_unsorted = getSpotProps(im_psl, spotProps_unsorted, innerRadius, outerRadius);
         [~, spotProps] = spotReIndex(spotProps_unsorted, outerRadius);
         spotData = getSpotData(spotProps);
                                        
@@ -70,6 +70,25 @@ switch switchMode
             text(spotProps(i).WeightedCentroid(1,1)-txtDist(1), spotProps(i).WeightedCentroid(1,2)+txtDist(2), num2str(spotData(i).SpotNum), 'Color','white','FontSize',14);            
         end
         
+        
+    case 'UpdateAnalysis'
+        disp('UpdateAnalysis');
+% Use after initial analysis when user moves and resizes spot 
+% information. Perhaps this can even be used after adding/deleting spots?
+% Simply update spotProps.WeightedCentroid positions and spotData using
+% getSpotData(spotProps) with newly-defined spot properties
+        
+% Update spotProps.WeightedCentroid positions 
+    % Get spotProps positions
+    % Re-mask at new position
+
+% Re-Index spot numbers
+
+% Run getSpotData 
+    % Use update spot position and masks
+
+
+
     case 'AddSpots'        
         disp('AddSpots');
         
@@ -101,7 +120,7 @@ switch switchMode
 %         
         % Re-index spot index reflect grid coordinates
         spotProps_unsorted = regionprops(im_bounds_refine, im_psl, 'all');
-        spotProps_unsorted = maskOnCircles(im_psl, spotProps_unsorted, innerRadius, outerRadius);
+        spotProps_unsorted = getSpotProps(im_psl, spotProps_unsorted, innerRadius, outerRadius);
         [~, spotProps] = spotReIndex(spotProps_unsorted, outerRadius);
         spotData = getSpotData(spotProps);
                                        

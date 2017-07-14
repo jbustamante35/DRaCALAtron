@@ -28,7 +28,7 @@ function varargout = QuantDraCALA(varargin)
 
 % Edit the above text to modify the response to help QuantDraCALA
 
-% Last Modified by GUIDE v2.5 03-Jul-2017 15:21:05
+% Last Modified by GUIDE v2.5 13-Jul-2017 17:20:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -133,18 +133,16 @@ assignin('base', 'imsName', cCheck);
 % If user did not press Cancel
 if (cCheck ~= 0)  
     set(handles.loadedImages_menu, 'Value', 1); % Set selection to first entry        
-    set(handles.loadedImages_menu, 'String', imsName); % Send filenames to loadedImages_menu listbox
+    set(handles.loadedImages_menu, 'String', imsName); % Send filenames to loadedImages_menu listbox    
 else    
     disp('No Images to analyze!');
     return;
 end
 
 
+
 % --- Executes on selection change in loadedImages_menu.
 function loadedImages_menu_Callback(hObject, eventdata, handles)
-% Hints: contents = get(hObject,'String') returns loadedImages_menu contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from loadedImages_menu
-
 % Listbox menu to select and load multiple images
 % After user clicks "Load Images" button, filename string (single) or cell array 
 % (multiple) are inputted to this listbox
@@ -157,7 +155,6 @@ global im_adjusted im_original analysisType
 
 % Get loadImages_button String and Value containing imsName
 imsString = get(hObject, 'String');
-imsPath = get(hObject, 'String');
 imsValue = get(hObject, 'Value');
 
 % Determine if single or multiple files to read
@@ -168,27 +165,32 @@ else                   % Multple files stored in cell array
 end
 
 % Read, process, and display inverted image onto main figure axis
+imageInfo = imfinfo(filename);
 im_original = double(imread(filename));
-% im_adjusted = imadjust(medfilt2(im_original));
 
 % Convert raw image with QL pixel values to PSL pixel values
-% PSL_image = im_raw; % If no QL-to-PSL conversion needed
-% Parameters based on defaults from Fiji Manual
+% Default parameters for QL2PSL conversion based on Fiji Manual
+RESOLUTION = 200;
+SENSITIIVITY = 10000;
+LATITUDE = 5;
 
-imageInfo = imfinfo(filename);
 if imageInfo.BitDepth == 8
-    G = 255; % For 8-bit image
+% For 8-bit image    
+    GRADATION = 255; 
 elseif imageInfo.BitDepth == 16
-    G = 65535; % For 16-bit image
+% For 16-bit image    
+    GRADATION = 65535; 
 else
-    G = 255; % Can't determine image bit-depth. Default to 8-bit
+% Can't determine image bit-depth. Default to 16-bit    
+    GRADATION = 65535;
 end
 
-PSL_image = ql2psl(im_original, 200, 10000, 5, G);
-im_adjusted = PSL_image;
+im_adjusted = ql2psl(im_original, RESOLUTION, SENSITIIVITY, LATITUDE, GRADATION);
+% im_adjusted = PSL_image;
+% PSL_image = im_raw; % If no QL-to-PSL conversion needed
 
-axes(handles.mainFig_axis);
-imagesc(im_adjusted), colormap gray, axis image, axis off;
+% axes(handles.mainFig_axis);
+% imagesc(im_adjusted), colormap gray, axis image, axis off;
 
 % Output image properties into imageInfo_panel
 imsInfo = imfinfo(filename);
@@ -207,6 +209,27 @@ shortName = imsInfo.Filename(nameStartSite(end) + 1:end);
 set(handles.filename_outputbox, 'String', shortName);
 set(handles.dimensionsX_outputbox, 'String', string(imsInfo.Width));
 set(handles.dimensionsY_outputbox, 'String', string(imsInfo.Height));
+
+
+minBrightness = min(im_adjusted(:));
+maxBrightness = max(im_adjusted(:));
+startBrightness = median(im_adjusted(:));
+shortStep = maxBrightness / 10000;
+longStep = maxBrightness / 1000;
+
+set(handles.minumum_slider, 'Min', minBrightness);
+set(handles.minumum_slider, 'Max', maxBrightness);
+set(handles.minumum_slider, 'Value', startBrightness);
+set(handles.minumum_slider, 'SliderStep', [shortStep longStep]);
+
+set(handles.maximum_slider, 'Min', minBrightness);
+set(handles.maximum_slider, 'Max', maxBrightness);
+set(handles.maximum_slider, 'Value', maxBrightness);
+set(handles.maximum_slider, 'SliderStep', [shortStep longStep]);
+
+axes(handles.mainFig_axis);
+imagesc(im_adjusted, [startBrightness maxBrightness]), colormap gray, axis image, axis off;
+
 
 % --- Executes during object creation, after setting all properties.
 function loadedImages_menu_CreateFcn(hObject, eventdata, handles)
@@ -235,18 +258,20 @@ function update_button_Callback(hObject, eventdata, handles)
     Delete spot properties from spotIndex
 %}
 
-global im_adjusted im_original spotData spotProps radiusOut radiusIn innCircle outCircle analysisType
+global im_adjusted spotData spotProps radiusOut radiusIn analysisType
 
 axes(handles.mainFig_axis);
-[spotData, spotProps] = spotAnalyzer(im_adjusted, im_original, radiusIn, radiusOut, analysisType);
+[spotData, spotProps] = spotAnalyzer(im_adjusted, radiusIn, radiusOut, analysisType);
 
 % Create Circles
-w_centroids = cat(1, spotProps.WeightedCentroid); 
-radiis_out = zeros(1, length(w_centroids)) + radiusOut;
-radiis_in = zeros(1, length(w_centroids)) + radiusIn;   
-innCircle = viscircles(w_centroids, radiis_in,'Color','b');
-outCircle = viscircles(w_centroids, radiis_out,'Color','g');                        
-            
+% w_centroids = cat(1, spotProps.WeightedCentroid); 
+% radiis_out = zeros(1, length(w_centroids)) + radiusOut;
+% radiis_in = zeros(1, length(w_centroids)) + radiusIn;   
+% innCircle = viscircles(w_centroids, radiis_in,'Color','b');
+% outCircle = viscircles(w_centroids, radiis_out,'Color','g');
+
+spotData = getSpotData(spotProps);
+
 % Output spotData and spotProperties into spotsInfo_panel
 set(handles.totalSpots_outputbox, 'String', num2str(length(spotData)));
 set(handles.radiusIn_outputbox, 'String', sprintf('%0.2f', radiusIn));
@@ -307,7 +332,7 @@ function checkSpot_button_Callback(hObject, eventdata, handles)
 - WeightedCentroid coordinates define location for outputted spot image
 - Send spotData and spotProperties to singleSpot_axis
 %}
-global im_adjusted spotData spotProps radiusOut radiusIn
+global im_adjusted spotData spotProps radiusOut radiusIn imLimits
 
 outerMasks = {1:length(spotProps)};
 for i = 1:length(spotProps)
@@ -324,8 +349,7 @@ if (cClick == 1)
     columnPlane = round([w_centroids(hit,1)-radiusOut w_centroids(hit,1)+radiusOut]);
     buff = 8;
 
-    axes(handles.singleSpot_axis);
-    imLimits = [0 max(im_adjusted(:))]; % Set scaling of cropped image to same as full image
+    axes(handles.singleSpot_axis); 
     imagesc(im_adjusted(rowPlane(1)-buff:rowPlane(2)+buff, columnPlane(1)-buff:columnPlane(2)+buff), imLimits),
     colormap gray, axis image, axis off;
     
@@ -355,7 +379,7 @@ function changeRadii_button_Callback(hObject, eventdata, handles)
 - 2 Sliders change size of radiusIn/radiusOut 
 - User presses "Confirm New Radius Sizes" to return to Main Window 
 %}
-global im_adjusted spotProps radiusIn radiusOut innCircle outCircle analysisType
+global im_adjusted spotProps radiusIn radiusOut analysisType imLimits
 
 msgbox('Select a spot to use as a template', 'Change Radius Size', 'help');
 uiwait(gcf);
@@ -378,6 +402,7 @@ if (cClick == 1)
     setappdata(0, 'templateSpot', templateSpot);    
     setappdata(0, 'radiusIn', radiusIn);
     setappdata(0, 'radiusOut', radiusOut);
+    setappdata(0, 'imLimits', imLimits);
 
     changeRadii;
     uiwait(gcf);   
@@ -463,10 +488,162 @@ function saveData_button_Callback(hObject, eventdata, handles)
 % Save spotData in a saveSpots.mat and saveSpots.xls file 
 % User determines name for file 
 
-global spotData
+global spotData spotProps
+save_string = sprintf('The spotData and spotProps structure arays will be saved in a .mat file; spotData will be saved in a tab-delimited .xls (Windows) or .txt (Unix) file.\n\nEnter filename to save spot data:');
+save_filename = inputdlg(save_string, 'Save Spot Data');
+saveSpots(spotData, spotProps, string(save_filename));
 
-save_filename = inputdlg('Enter filename to save spot data: ', 's');
-saveSpots(spotData, string(save_filename));
+
+% --- Executes on button press in splitMultiple_button.
+function splitMultiple_button_Callback(hObject, eventdata, handles)
+% UPDATE THIS HELP SECTION
+% Goes to directory and sends filename(s) to loadedImages_menu
+% Get loadImages_button String and Value containing imsName
+selectedImage = get(handles.loadedImages_menu, 'String');
+selectedIndex = get(handles.loadedImages_menu, 'Value');
+
+% Determine if single or multiple files to read
+if (iscell(selectedImage)) % Single image loaded stored as a string
+    fullImage = selectedImage{selectedIndex};
+else                   % Multple files stored in cell array
+    fullImage = selectedImage;
+end
+
+fprintf('%s',string(fullImage));
+[~, splitNames, ~] = splitFullPlate(fullImage);
+
+set(handles.splitMultiple_menu, 'Value', 1); % Set selection to first entry        
+set(handles.splitMultiple_menu, 'String', splitNames); % Send filenames to loadedImages_menu listbox    
+
+
+% --- Executes during object creation, after setting all properties.
+function splitMultiple_menu_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+set(hObject, 'String', 'Split large plate into multiple files');
+
+
+% --- Executes on selection change in splitMultiple_menu.
+function splitMultiple_menu_Callback(hObject, eventdata, handles)
+% Hints: contents = cellstr(get(hObject,'String')) returns splitMultiple_menu contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from splitMultiple_menu
+
+% When user loads a large image containing multiple plates, this button
+% identifies each plate and splits them into multiple .tif files of the
+% same bit-depth.
+% Individual .tif files are then outputted into this listbox, and the user
+% can click on individual files to load into mainFig_axis 
+
+% Listbox menu to select and load multiple images
+% After user clicks "Load Images" button, filename string (single) or cell array 
+% (multiple) are inputted to this listbox
+% User can change images loaded in main axis figure by selecting 
+% filename from listbox. 
+% Retrieve  string or cell array from loadImages_button and output 
+% selected image into mainFig_axis
+
+global im_adjusted im_original analysisType
+
+% Get loadImages_button String and Value containing imsName
+splitNames = get(hObject, 'String');
+splitIndex = get(hObject, 'Value');
+
+% Determine if single or multiple files to read
+if (iscell(splitNames)) % Single image loaded stored as a string
+    splitImage = splitNames{splitIndex};
+else                   % Multple files stored in cell array
+    splitImage = splitNames;
+end
+
+imageInfo = imfinfo(splitImage);
+im_original = double(imread(splitImage));
+
+RESOLUTION = 200;
+SENSITIIVITY = 10000;
+LATITUDE = 5;
+if imageInfo.BitDepth == 8
+% For 8-bit image    
+    GRADATION = 255; 
+elseif imageInfo.BitDepth == 16
+% For 16-bit image    
+    GRADATION = 65535; 
+else
+% Can't determine image bit-depth. Default to 16-bit    
+    GRADATION = 65535;
+end
+
+im_adjusted = ql2psl(im_original, RESOLUTION, SENSITIIVITY, LATITUDE, GRADATION);
+
+axes(handles.mainFig_axis);
+imagesc(im_adjusted), colormap gray, axis image, axis off;
+
+analysisType = 'InitialAnalysis';
+
+% Determine user's OS
+if (isunix == 1)
+    nameStartSite = strfind(imageInfo.Filename, '/');
+elseif (ispc == 1)
+    nameStartSite = strfind(imageInfo.Filename, '\');
+else
+    nameStartSite = strfind(imageInfo.Filename, 'DefaultImageName');
+end
+
+% Output image properties into imageInfo_panel
+shortName = imageInfo.Filename(nameStartSite(end) + 1:end);
+set(handles.filename_outputbox, 'String', shortName);
+set(handles.dimensionsX_outputbox, 'String', string(imageInfo.Width));
+set(handles.dimensionsY_outputbox, 'String', string(imageInfo.Height));
+
+
+
+% --- Executes on slider movement.
+function minumum_slider_Callback(hObject, eventdata, handles)
+
+global im_adjusted imLimits
+minPos = get(hObject, 'Value');
+maxPos = get(handles.maximum_slider, 'Value');
+imLimits = [minPos maxPos];
+if maxPos <= minPos
+    minPos = 0;
+end
+
+axes(handles.mainFig_axis);
+imagesc(im_adjusted, imLimits), colormap gray, axis image, axis off;
+
+% --- Executes during object creation, after setting all properties.
+function minumum_slider_CreateFcn(hObject, eventdata, handles)
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on slider movement.
+function maximum_slider_Callback(hObject, eventdata, handles)
+
+global im_adjusted imLimits
+minPos = get(handles.minumum_slider, 'Value');
+maxPos = get(hObject, 'Value');
+imLimits = [minPos maxPos];
+if maxPos <= minPos
+    minPos = 0;
+end
+
+axes(handles.mainFig_axis);
+imagesc(im_adjusted, imLimits), colormap gray, axis image, axis off;
+
+
+% --- Executes during object creation, after setting all properties.
+function maximum_slider_CreateFcn(hObject, eventdata, handles)
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+
+
 
 
 
@@ -521,14 +698,6 @@ function deleteSpot_button_Callback(hObject, eventdata, handles)
 % hObject    handle to deleteSpot_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-
-
-
-
-
-
-
 
 
 % --- Executes on button press in analysis_button.
@@ -869,15 +1038,8 @@ end
 function quantDracala_gui_ButtonDownFcn(hObject, eventdata, handles)
 
 
-
-
 % --------------------------------------------------------------------
 function Untitled_1_Callback(hObject, eventdata, handles)
-
-
-
-% --- Executes when quantDracala_gui is resized.
-function quantDracala_gui_SizeChangedFcn(hObject, eventdata, handles)
 
 
 
@@ -907,5 +1069,28 @@ function changeRadii_button_ButtonDownFcn(hObject, eventdata, handles)
 % --- Executes on mouse press over axes background.
 function mainFig_axis_ButtonDownFcn(hObject, eventdata, handles)
 % hObject    handle to mainFig_axis (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+% --- Executes on button press in segmentation_button.
+function segmentation_button_Callback(hObject, eventdata, handles)
+% hObject    handle to segmentation_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in TBD_button.
+function TBD_button_Callback(hObject, eventdata, handles)
+% hObject    handle to TBD_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over minumum_slider.
+function minumum_slider_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to minumum_slider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

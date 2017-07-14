@@ -22,7 +22,7 @@ function varargout = changeRadii(varargin)
 
 % Edit the above text to modify the response to help changeRadii
 
-% Last Modified by GUIDE v2.5 19-May-2017 18:44:59
+% Last Modified by GUIDE v2.5 12-Jul-2017 12:05:06
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -73,7 +73,10 @@ end
 
 % UIWAIT makes changeRadii wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
-
+oldRadiusIn = getappdata(0, 'radiusIn');
+oldRadiusOut = getappdata(0, 'radiusOut');
+set(handles.innerRadiusAdjust_slider, 'Value', oldRadiusIn);
+set(handles.outerRadiusAdjust_slider, 'Value', oldRadiusOut);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -91,7 +94,8 @@ global cCoords oldCircInn oldCircOut oldRadiusIn oldRadiusOut
 axes(handles.radiusAdjust_axis);
 
 im_spot = getappdata(0, 'templateSpot');
-imagesc(im_spot), colormap gray, axis image, axis off;
+imageLimits = getappdata(0, 'imLimits');
+imagesc(im_spot, imageLimits), colormap gray, axis image, axis off;
 [cRow, cColumn, ~] = size(im_spot);
 
 cCoords = [cColumn/2 cRow/2];
@@ -129,8 +133,6 @@ oldCircInn = newCircInn;
 
 
 
-
-
 % --- Executes during object creation, after setting all properties.
 function innerRadiusAdjust_slider_CreateFcn(hObject, eventdata, handles)
 % Hint: slider controls usually have a light gray background.
@@ -142,7 +144,7 @@ end
 initialValueInn = getappdata(0, 'radiusIn');
 set(hObject, 'Value', initialValueInn);
 set(hObject, 'Min', 0);
-set(hObject, 'Max', 100);
+set(hObject, 'Max', 50);
 
 
 
@@ -186,7 +188,7 @@ end
 initialValueOut = getappdata(0, 'radiusOut');
 set(hObject, 'Value', initialValueOut);
 set(hObject, 'Min', 0);
-set(hObject, 'Max', 100);
+set(hObject, 'Max', 50);
 
 function changeRadiusOut_outputbox_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of changeRadiusOut_outputbox as text
@@ -208,8 +210,6 @@ end
 % --- Executes on button press in confirmNewRadii_button.
 function confirmNewRadii_button_Callback(hObject, eventdata, handles)
 global newRadiusOut newRadiusIn oldRadiusIn oldRadiusOut
-
-
 
 newRadiusIn = str2double(get(handles.changeRadiusIn_outputbox, 'String'));
 newRadiusOut = str2double(get(handles.changeRadiusOut_outputbox, 'String'));
@@ -288,3 +288,72 @@ function figure1_SizeChangedFcn(hObject, eventdata, handles)
 % hObject    handle to figure1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+
+function templateSpot_outputbox_Callback(hObject, eventdata, handles)
+% hObject    handle to templateSpot_outputbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of templateSpot_outputbox as text
+%        str2double(get(hObject,'String')) returns contents of templateSpot_outputbox as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function templateSpot_outputbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to templateSpot_outputbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function oldInner_outputbox_Callback(hObject, eventdata, handles)
+% hObject    handle to oldInner_outputbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of oldInner_outputbox as text
+%        str2double(get(hObject,'String')) returns contents of oldInner_outputbox as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function oldInner_outputbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to oldInner_outputbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function oldOuter_outputbox_Callback(hObject, eventdata, handles)
+% hObject    handle to oldOuter_outputbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of oldOuter_outputbox as text
+%        str2double(get(hObject,'String')) returns contents of oldOuter_outputbox as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function oldOuter_outputbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to oldOuter_outputbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

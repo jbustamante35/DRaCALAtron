@@ -17,7 +17,7 @@ Ainn = {};
 Iout = {};
 Aout = {};
 Ibg = {};
-fractionBound = {};       
+FractionBound = {};       
 for i = 1:length(spotProps)
     SpotNum{i} = i;
     Ainn{i} = length(spotProps(i).innerCircles);
@@ -25,7 +25,7 @@ for i = 1:length(spotProps)
     Iinn{i} = sum(spotProps(i).innerCircles);
     Iout{i} = sum(spotProps(i).outerCircles);
     Ibg{i} = Ainn{i} * ((Iout{i} - Iinn{i}) / (Aout{i} - Ainn{i}));
-    fractionBound{i} = ((Iinn{i} - Ibg{i}) / Iout{i}); % Normally they analyze with NON-inverted image. I use inverted image.
+    FractionBound{i} = ((Iinn{i} - Ibg{i}) / Iout{i}); % Normally they analyze with NON-inverted image. I use inverted image.
 end
 
 spotData = struct('SpotNum', SpotNum,...            
@@ -34,4 +34,4 @@ spotData = struct('SpotNum', SpotNum,...
     'Iout', Iout,...
     'Aout', Aout,...
     'Ibg' , Ibg,...
-    'FractionBound', fractionBound);
+    'FractionBound', FractionBound);
