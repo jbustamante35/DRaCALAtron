@@ -7,6 +7,7 @@ Screenshots of the GUI windows and sample images are shown below.
 
 ## BASIC WORKFLOW
 - Installation and Set-up
+
     Download all files and folders from this GitHub page and place into desired directory. Then either: 
     
         1) Set Path to this directory
@@ -16,16 +17,20 @@ Screenshots of the GUI windows and sample images are shown below.
             Start the program by clicking on the QuantDRaCALA app icon
 
 - Pre-processing and Loading Images
+
     Read "Notes on Image Types" section below before using this program. 
     
     
 - Adjusting and Processing of Spots
+
     asdf 
 
 - Analyzing and Saving Data
+
     asdf 
 
 - Data Formats
+
     asdf 
 
 ## Main Functions
