@@ -148,7 +148,6 @@ fprintf("%0.4f seconds to add new spot.\n", toc);
     
     case 'ChangeRadiiSizes'
 %% Change Radii Sizes Mode: Re-do analysis after changing radii sizes    
-% This needs to change to assume user has moved and adjusted spots%
 tic;
 % New version to keep spots on main axis. Just set new radii to adjusted sizes
 % Get object handles from spotProps
@@ -157,9 +156,10 @@ tic;
 % Keep same xMin yMin positions, but change size to new diameters
         newOutDiameter = ceil(outerRadius * 2);
         newInnDiameter = ceil(innerRadius * 2);
-
+        
+% Figure out if setNewRadii will be faster with 1 or 2 separate functions
 %         arrayfun(@(x) setNewRadii(x, newOutDiameter), tableProps.outerObject, 'UniformOutput', 0');
-%         arrayfun(@(y) setNewRadii(y, newInnDiameter), tableProps.innerObject, 'UniformOutput', 0');        
+%         arrayfun(@(y) setNewRadii(y, newInnDiameter), tableProps.innerObject, 'UniformOutput', 0');
         arrayfun(@(x,y) setNewRadii(x, newOutDiameter, y, newInnDiameter), tableProps.outerObject, tableProps.innerObject, 'UniformOutput', 0); 
         
         tableProps.outerMask = arrayfun(@(x) createMask(x), tableProps.outerObject, 'UniformOutput', 0);

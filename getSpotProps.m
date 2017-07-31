@@ -57,6 +57,7 @@ h = getappdata(gca, 'handles'); % Figure handle for mainFig_axis
 %% The meat of the entire analysis: 
 % Create circles of user-defined radii size at weighted centroid positions, 
 % then place them on the main figure axis 
+
 tic; % Calculate Outer Circles
 % Re-configure weighted centroids to reflect ellipses position parameters 
         fprintf('Started analysis of outer circles...\n');
@@ -98,70 +99,3 @@ function configureCircle(circleObject, circleColor)
     circleObject.setColor(circleColor);
     circleObject.setFixedAspectRatioMode('Y');
 end
-
-%% Old Method
-% function spotProps_update = getSpotProps(im, spotProps_old, innerRadius, outerRadius)
-% tic;
-% %% Set Position of ellipse to Weighted Centroid
-% tableProps = struct2table(spotProps_old);
-% outerMin = ceil(tableProps.WeightedCentroid - outerRadius);
-% innerMin = ceil(tableProps.WeightedCentroid - innerRadius);
-% 
-% outerD = ceil(2*outerRadius);
-% innerD = ceil(2*innerRadius);
-% 
-% outerPositionParams = [outerMin(:,1) outerMin(:,2)];
-% innerPositionParams = [innerMin(:,1) innerMin(:,2)];
-% 
-% tic;
-% h = getappdata(gca, 'handles'); % Figure handle for mainFig_axis
-
-% Pre-allocate table fields with 0 for speed(THIS HAS A NEGATIVE EFFECT, conversion to diffent data types)
-% tableProps.outerObject(1) = 0;
-% tableProps.outerMask(1) = 0;
-% tableProps.outerCircles(1) = 0;
-% tableProps.innerObject(1) = 0;
-% tableProps.innerMask(1) = 0;
-% tableProps.innerCircles(1) = 0;
-
-% Both outer/inner circle objects, then outer-inner properties [18 seconds]
-% [tableProps.outerObject, tableProps.innerObject] = arrayfun(@(a,b,c,d) createCircles(h, a, b, outerD, 'g', c, d, innerD, 'b'),... % Set up function handle
-%                                         outerPositionParams(:,1), outerPositionParams(:,2),... % Outer circle parameters
-%                                         innerPositionParams(:,1), innerPositionParams(:,2),... % Inner circle parameters
-%                                         'UniformOutput', 0); % Still no idea why this is standard
-% 
-% % Generate masks and get pixel data from inner and outer circles
-% getPropsMessages = {};
-% getPropsMessages{1} = sprintf('Finished creating %d circles. Generating masks...', sum(length(tableProps.outerObject), length(tableProps.innerObject)));
-% set(h.currentProcess_textbox, 'String', getPropsMessages);
-% tableProps.outerMask = cellfun(@(x) createMask(x), tableProps.outerObject, 'UniformOutput', 0);
-% tableProps.innerMask = cellfun(@(x) createMask(x), tableProps.innerObject, 'UniformOutput', 0);   
-% 
-% getPropsMessages{2} = sprintf('Finished generating masks. Mapping masks onto main image...');
-% set(h.currentProcess_textbox, 'String', getPropsMessages);
-% tableProps.outerCircles = cellfun(@(x) im(x), tableProps.outerMask, 'UniformOutput', 0);
-% tableProps.innerCircles = cellfun(@(x) im(x), tableProps.innerMask, 'UniformOutput', 0);
-% 
-% spotProps_update = table2struct(tableProps);
-% totalObjects = length(tableProps.outerObject) + length(tableProps.innerObject);
-% 
-% hold on;
-% fprintf("%.04f seconds to create %d spots!\n", cputime-fullTime, totalObjects);
-% 
-% end
-%% [OLD] Function to create both outer and inner circles and then store the object handles in two separate object arrays
-% function [ellipseObjectA, ellipseObjectB] = createCircles(mainFigHandle, minPositionA, maxPositionA, radiusSizeA, circleColorA,...
-%                                                              minPositionB, maxPositionB, radiusSizeB, circleColorB)
-%     creationTime = cputime;
-%     ellipseObjectA = imellipse(mainFigHandle.mainFig_axis, [minPositionA maxPositionA radiusSizeA radiusSizeA]);
-%     ellipseObjectA.setColor(circleColorA);
-%     ellipseObjectA.setFixedAspectRatioMode('on');
-%     
-%     ellipseObjectB = imellipse(mainFigHandle.mainFig_axis, [minPositionB maxPositionB radiusSizeB radiusSizeB]);
-%     ellipseObjectB.setColor(circleColorB);
-%     ellipseObjectB.setFixedAspectRatioMode('on');        
-%     
-% %     pause(0.00001); % Use so user can see output. Makes functino slower, but faster than drawnow.
-%     fprintf("%0.4f seconds to create outer and inner spot.\n", cputime-creationTime);
-% end
-
