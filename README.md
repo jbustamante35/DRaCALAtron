@@ -10,7 +10,7 @@ Screenshots of the GUI windows and sample images are shown below.
 
     Download all files and folders from this GitHub page and place into desired directory. Then either: 
     
-        1) Set Path to this directory
+        1) Set Path to this directory in Matlab
             Execute program by typing "QuantDRaCALA" in the console
             
         2) Use Matlab's Package App tool to package the program as an executable Matlab app  
@@ -52,18 +52,17 @@ Sample images are stored as Quantum Level (QL) pixel scaling data, which is a lo
 If images are already PSL-converted, then the QL2PSL algorithm will not run [function IN-PROGRESS] and data will be analyzed as is. Images in neither QL nor PSL format will not yield accurate data; however the trends in pixel intensity appear to correlate generally well with PSL-converted images, except in spots with low Fraction Bound values (FB < 0.05).
 
 ## IN-PROGRESS FUNCTIONALITY
-- addData_spotAnalyzer
+- addData_spotAnalyzer (fixing this functionality)
 - deleteData_spotAnalyzer
 - autoSegment (.fig)
-- psl2ql
 - Data analysis and figure creation GUI (.m and .fig)
 
 ## BUGS AND LIMITATIONS 
 Known Bugs:
-- Text boxes can sometimes pre-load with information from the previous session. This doesn't affect loading of the next image, but it can be annoying to see.
-- Single-spot window can sometimes pre-load with an image from the previous session. The "Reset" button loads the default image. 
+- A seemingly random bug can sometimes inhibit the user's ability to resize the spots after the initial identification. Restarting the program and trying the analysis again should fix the issue, but the source of the bug is still unknown.    
 
 Limitations
-- Draggable and Resizeable spots overload the image axis and make panning and zooming very slow. I haven't found a way to optimize dealing with the large number of objects.  
+- Draggable and Resizeable spots overload the image axis and make panning and zooming very slow. I haven't found a way to optimize dealing with the large number of objects. There is a strategy where spots are only visible if their coordinates are within the limits of the image in the main window axes, but I haven't implemented this feature yet.  
 
-## Sample 
+## Screenshot of the main QuantDRaCALA GUI window
+![alt tag](https://github.com/jbustamante35/QuantDRaCALA/blob/master/Images/QuantDRaCALA_screenshot.png)
