@@ -16,8 +16,9 @@ function saveSpots(mySpots, myProps, filename)
 
 
 % save(filename, 'mySpots', 'myProps'); % Saves data as .mat file
-
+tic;
 mySpots_dataset = struct2dataset(mySpots(:));
+mySpots_dataset.WellPosition = cellstr(mySpots_dataset.WellPosition); % Convert spotData.WellPositions to cellstring
 
 if ispc == 1
     export(mySpots_dataset, 'XLSfile', filename); % Saves data as .xls file    
@@ -31,3 +32,4 @@ elseif isunix == 1
 else
     export(mySpots_dataset, 'File', filename);
 end
+fprintf('%.04 seconds to save spotData and spotProps.', toc);

@@ -22,7 +22,7 @@ function varargout = changeRadii(varargin)
 
 % Edit the above text to modify the response to help changeRadii
 
-% Last Modified by GUIDE v2.5 12-Jul-2017 12:05:06
+% Last Modified by GUIDE v2.5 28-Jul-2017 15:24:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -43,6 +43,7 @@ else
 end
 % End initialization code - DO NOT EDIT
 
+
 % --- Executes just before changeRadii is made visible.
 function changeRadii_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
@@ -59,12 +60,13 @@ guidata(hObject, handles);
 
 % This sets up the initial plot - only do when we are invisible
 % so window can get raised using changeRadii.
-global im_default
+
+% global im_default
 if strcmp(get(hObject,'Visible'),'off')
     if (ispc == 1)        
-        im_default = imread('Images\countChocula.jpg');
+        im_default = imread('Images\QD_logoBlack.jpg');
     elseif (isunix == 1)
-        im_default = imread('Images/countChocula.jpg');
+        im_default = imread('Images/QD_logoBlack.jpg');
     else
         im_default = imread('coins.png');
     end    
@@ -73,27 +75,10 @@ end
 
 % UIWAIT makes changeRadii wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
-oldRadiusIn = getappdata(0, 'radiusIn');
-oldRadiusOut = getappdata(0, 'radiusOut');
-set(handles.innerRadiusAdjust_slider, 'Value', oldRadiusIn);
-set(handles.outerRadiusAdjust_slider, 'Value', oldRadiusOut);
-
-
-% --- Outputs from this function are returned to the command line.
-function varargout = changeRadii_OutputFcn(hObject, eventdata, handles)
-% varargout  cell array for returning output args (see VARARGOUT);
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Get default command line output from handles structure
-varargout{1} = handles.output;
 
 global cCoords oldCircInn oldCircOut oldRadiusIn oldRadiusOut
-
-axes(handles.radiusAdjust_axis);
-
-im_spot = getappdata(0, 'templateSpot');
+ 
+im_spot = getappdata(0, 'spotHit_image');
 imageLimits = getappdata(0, 'imLimits');
 imagesc(im_spot, imageLimits), colormap gray, axis image, axis off;
 [cRow, cColumn, ~] = size(im_spot);
@@ -106,14 +91,66 @@ oldRadiusOut = getappdata(0, 'radiusOut');
 oldCircInn = viscircles(cCoords, oldRadiusIn, 'color', 'b'); % Blue inner circle
 oldCircOut = viscircles(cCoords, oldRadiusOut, 'color', 'g'); % Green outer circle
 
+oldRadiusIn = getappdata(0, 'radiusIn');
+oldRadiusOut = getappdata(0, 'radiusOut');
+set(handles.innerRadiusAdjust_slider, 'Value', oldRadiusIn);
+set(handles.outerRadiusAdjust_slider, 'Value', oldRadiusOut);
+
+chosenSpot = getappdata(0, 'hit'); % Get Spot index # from main GUI
+set(handles.templateSpot_outputbox, 'String', num2str(chosenSpot));
+set(handles.oldInner_outputbox, 'String', num2str(oldRadiusIn));
+set(handles.oldOuter_outputbox, 'String', num2str(oldRadiusOut));
 set(handles.changeRadiusIn_outputbox, 'String', num2str(oldRadiusIn));
 set(handles.changeRadiusOut_outputbox, 'String', num2str(oldRadiusOut));
+
+
+% --- Outputs from this function are returned to the command line.
+function varargout = changeRadii_OutputFcn(hObject, eventdata, handles)
+% varargout  cell array for returning output args (see VARARGOUT);
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Get default command line output from handles structure
+varargout{1} = handles.output;
+
 
 
 
 % --- Executes during object creation, after setting all properties.
 function radiusAdjust_axis_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to radiusAdjust_axis (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
 % Hint: place code in OpeningFcn to populate radiusAdjust_axis
+
+% global cCoords oldCircInn oldCircOut oldRadiusIn oldRadiusOut
+%  
+% im_spot = getappdata(0, 'spotHit_image');
+% imageLimits = getappdata(0, 'imLimits');
+% imagesc(im_spot, imageLimits), colormap gray, axis image, axis off;
+% [cRow, cColumn, ~] = size(im_spot);
+% 
+% cCoords = [cColumn/2 cRow/2];
+% 
+% oldRadiusIn = getappdata(0, 'radiusIn');
+% oldRadiusOut = getappdata(0, 'radiusOut');
+% 
+% oldCircInn = viscircles(cCoords, oldRadiusIn, 'color', 'b'); % Blue inner circle
+% oldCircOut = viscircles(cCoords, oldRadiusOut, 'color', 'g'); % Green outer circle
+% 
+% oldRadiusIn = getappdata(0, 'radiusIn');
+% oldRadiusOut = getappdata(0, 'radiusOut');
+% set(handles.innerRadiusAdjust_slider, 'Value', oldRadiusIn);
+% set(handles.outerRadiusAdjust_slider, 'Value', oldRadiusOut);
+% 
+% chosenSpot = getappdata(0, 'hit'); % Get Spot index # from main GUI
+% set(handles.templateSpot_outputbox, 'Value', chosenSpot);
+% set(handles.oldInner_outputbox, 'String', num2str(oldRadiusIn));
+% set(handles.oldOuter_outputbox, 'String', num2str(oldRadiusOut));
+
+
 
 
 
@@ -210,6 +247,14 @@ end
 % --- Executes on button press in confirmNewRadii_button.
 function confirmNewRadii_button_Callback(hObject, eventdata, handles)
 global newRadiusOut newRadiusIn oldRadiusIn oldRadiusOut
+% Clear all app data from root handle [better yet, change handle with this data
+allAppData = fieldnames(getappdata(0));
+for i = 1:length(allAppData)
+    rmappdata(0, allAppData{i});
+end
+delete(findall(handles.radiusAdjust_axis, 'Type', 'hggroup'));
+delete(findall(handles.radiusAdjust_axis, 'Type', 'image'));
+delete(findall(handles.radiusAdjust_axis, 'Type', 'text'));
 
 newRadiusIn = str2double(get(handles.changeRadiusIn_outputbox, 'String'));
 newRadiusOut = str2double(get(handles.changeRadiusOut_outputbox, 'String'));
@@ -217,6 +262,7 @@ setappdata(0, 'newRadiusIn', newRadiusIn);
 setappdata(0, 'newRadiusOut', newRadiusOut);
 questdlg(sprintf('Old Inner Radius: %0.0f \t \t New Inner Radius: %0.0f\nOld Outer Radius: %0.0f \t \t New Outer Radius: %0.0f', oldRadiusIn, newRadiusIn, oldRadiusOut, newRadiusOut),...
             'Confirm New Radii Sizes', 'warn');
+
 
 % uiwait(gcf);
 close(gcf);
@@ -283,19 +329,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes when figure1 is resized.
-function figure1_SizeChangedFcn(hObject, eventdata, handles)
-% hObject    handle to figure1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-
 function templateSpot_outputbox_Callback(hObject, eventdata, handles)
-% hObject    handle to templateSpot_outputbox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of templateSpot_outputbox as text
 %        str2double(get(hObject,'String')) returns contents of templateSpot_outputbox as a double
 
