@@ -27,10 +27,12 @@ function [columnCollect, spotProps_update] = spotReIndex(spotProps, radOut)
 %   spotProps_update: updated spotData containing re-indexed spotData.NewIndex
 
 %% Store data by columns
-columnCollect = cell({1:length(spotProps)}); % 2D cell array (multidimensional data structure) 
+% columnCollect = cell({1:length(spotProps)}); % 2D cell array (multidimensional data structure) 
+tic;
 columnCollect{:} = cell({}); % Unknown size of columns 
 colNumber = 1; % Index for collecting by columns
 colIndex = 1; % Index for spots in colNum 
+
 for i = 1:length(spotProps)
     % y-coordinate difference between current and previous spot
     if i == 1
@@ -41,7 +43,7 @@ for i = 1:length(spotProps)
     
     if centroid_distance < (1.5 * radOut) % Distance less than 1.5x the outer radius        
         columnCollect{colNumber}{colIndex,1} = spotProps(i);
-        colIndex = colIndex + 1;         
+        colIndex = colIndex + 1;
     else
         colNumber = colNumber + 1; % Large distance between columns, so start new column index
         colIndex = 1; % colIndex resets        
@@ -58,6 +60,11 @@ Basic Algorithm:
     Re-index column order by finding index of matching array value
     Concatenate all spotProps with updated order 
 %}
+
+% For labelling by 96-wellplate positions
+wellRows = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]; % All 8 rows, but make 12 for ease
+wellColumns = ["01", "02", "03", "04", "05", "06", "07" ,"08", "09", "10", "11", "12"]; % All 12 columns
+wellLabels = [wellRows; wellColumns];
 
 oldColumn = columnCollect;
 for i = 1:length(columnCollect)    
@@ -79,6 +86,7 @@ for i = 1:length(columnCollect)
             if updatedArray(arrIndex,2) == oldColumn{i}{iii}.WeightedCentroid(2)
                 columnCollect{i}{updatedArray(arrIndex,1)} = oldColumn{i}{iii};
                 match_found = 1;
+                columnCollect{i}{updatedArray(arrIndex,1)}.wellPosition = wellLabels(1,iii) + wellLabels(2,i); % Set well position
             else
                 arrIndex = arrIndex + 1;
                 match_found = 0;
@@ -89,3 +97,4 @@ end
 
 columnCollect_all = cat(1, columnCollect{:});
 spotProps_update = cat(1, columnCollect_all{:});
+fprintf("%0.4f seconds to re-index spotProps.\n", toc);

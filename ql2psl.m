@@ -1,5 +1,5 @@
-function myPSL = ql2psl(im, res, sen, lat, grad)
-%% Function to convert QL values to PSL values of an 2D matrix or image
+function convertedPixelValue = ql2psl(im, res, sen, lat, grad, ConversionDirection)
+% ql2psl: function to convert QL values to PSL values of an 2D matrix or image
 % Convert Quantum Level (QL) pixel values from phosphorimage output to the
 % Photo Stimulated Luminescence (PSL) Value, or the  quantified value in
 % linear scale.
@@ -41,7 +41,6 @@ function myPSL = ql2psl(im, res, sen, lat, grad)
 % Output:
 %      psl  = 2D matrix containing PSL-converted pixel values (PSL matrix)
 
-
 %% For Debug Purposes: Test with default parameter values
 % Comment out for regular use! 
 % res = 200;
@@ -55,25 +54,17 @@ function myPSL = ql2psl(im, res, sen, lat, grad)
 %            23505 3632  2480;...
 %            25503 23183 29187;] % Sample matrix with known PSL values
 
-%% Solved using symbolic expression
-ql = double(im);
-myPSL = (2*10.^(lat*(ql/grad - 0.5))*res^2)/(5*sen);
-
-% Convert back to QL if wanted
-% myQL = grad * (log((5 * myPSL * sen) / (2 * res^2)) / (lat * log(10)) + 0.5;
-
-%% Old and inefficient method (2x slower!)
-% To simplify equation, make A = (Res/100)^2 x (4000/S) and B = QL/G - 0.5
-% tic
-% ql = im;
-% A = ((res / 100)^2) * (4000 / sen);
-% B = zeros(size(ql,1), size(ql,2));
-% psl = zeros(size(ql,1), size(ql,2));
-% 
-% for i = 1:size(B,1)
-%     B(i,:) = lat * (ql(i,:)/grad) - 0.5;
-%     psl(i,:) = A * (10 .^ B(i,:));
-% end
-% toc
-
-
+%% Core conversion function
+tic;
+switch ConversionDirection
+    case 'QL2PSL'
+    % Convert to PSL (default)
+        ql = double(im);
+        convertedPixelValue = (2*10.^(lat*(ql/grad - 0.5))*res^2)/(5*sen);
+    
+    case 'PSL2QL'
+    % Back-conversion if input image was already in PSL values
+        psl = double(im);
+        convertedPixelValue = grad * (log((5 * psl * sen) / (2 * res^2)) / (lat * log(10)) + 0.5);
+end
+fprintf("%0.4f seconds to convert image using %s conversion method.\n", toc, ConversionDirection);
